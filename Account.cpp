@@ -29,7 +29,7 @@ namespace seneca {
       m_number = -1;
       m_balance = 0.0;
       if (holderName && holderName[0] && isValidNumber(number)
-         && balance > 0) {
+         && balance >= 0) {
          cpyName(holderName);
          m_number = number;
          m_balance = balance;
@@ -69,75 +69,141 @@ namespace seneca {
       return cout;
    }
 
-   void Account::setInvalid() {
+   void Account::makeItInvalid() {
       m_number = -1;
       m_balance = 0.0;
       m_holderName[0] = char(0);
-   }
+}
+
 
    Account::operator bool() const {
-      return m_holderName[0] && isValidNumber(m_number) && m_balance >= 0.0;
+   if (m_holderName[0] == char(0)) {
+      return false;         
    }
+
+   if (!isValidNumber(m_number)) {
+      return false;           
+   }
+
+   if (m_balance < 0.0) {
+      return false;           
+   }
+
+   return true;
+}
+
 
    Account::operator int() const {
       return m_number;
-   }
+}
 
    Account::operator double() const {
       return m_balance;
-   }
+}
 
    Account::operator const char*() const {
       return m_holderName;
+}
+   
+   const char Account::operator[](int index) const {
+   int len = 0;
+
+   while (m_holderName[len] != char(0)) {
+      len++;
    }
 
-  char& Account::operator[](int index) {
-      int len = 0;
-      while (m_holderName[len]) len++;
-      if (index < 0) index = -index;
-      return m_holderName[len ? index % len : 0];
+   if (len == 0) {
+      return m_holderName[0];
    }
 
-  const char Account::operator[](int index) const {
-      int len = 0;
-      while (m_holderName[len]) len++;
-      if (index < 0) index = -index;
-      return m_holderName[len ? index % len : 0];
+   if (index < 0) {
+      index = -index;
    }
+
+   index = index % len;
+
+   return m_holderName[index];
+}
+
+   char& Account::operator[](int index) {
+   int len = 0;
+
+   while (m_holderName[len] != char(0)) {
+      len++;
+   }
+
+   if (len == 0) {
+      return m_holderName[0];
+   }
+
+   if (index < 0) {
+      index = -index;
+   }
+
+   index = index % len;
+
+   return m_holderName[index];
+}
+
 
    Account& Account::operator=(int number) {
-      if (~(*this))
-         isValidNumber(number) ? m_number = number : setInvalid();
-      return *this;
+   if (~(*this)) {
+
+      if (isValidNumber(number)) {
+         m_number = number;
+      }
+      else {
+         makeItInvalid();
+      }
+   }
+   return *this;
+}
+   Account& Account::operator=(double balance) {
+   if (balance >= 0.0) {
+      m_balance = balance;
+   }
+   else {
+      makeItInvalid();
    }
 
-   Account& Account::operator=(double balance) {
-      return balance >= 0 ? (m_balance = balance, *this)
-                          : (setInvalid(), *this);
-   }
+   return *this;
+}
+
 
    Account& Account::operator+=(double amount) {
-      if (*this && amount >= 0) m_balance += amount;
+   if (!(*this) || amount < 0) {
       return *this;
    }
+   m_balance += amount;
+   return *this;
+}
 
    Account& Account::operator-=(double amount) {
-      if (*this && amount >= 0 && m_balance >= amount)
-         m_balance -= amount;
+   if (!(*this) || amount < 0 || m_balance < amount) {
       return *this;
    }
+   m_balance -= amount;
+   return *this;
+}
 
    Account& Account::operator<<(Account& right) {
-      if (this != &right && *this && right)
-         m_balance += right.m_balance, right.m_balance = 0;
+   if (this == &right || !(*this) || !right) {
       return *this;
    }
+   m_balance += right.m_balance;
+   right.m_balance = 0.0;
+   return *this;
+}
+
 
    Account& Account::operator>>(Account& right) {
-      if (this != &right && *this && right)
-         right.m_balance += m_balance, m_balance = 0;
+   if (this == &right || !(*this) || !right) {
       return *this;
    }
+   right.m_balance += m_balance;
+   m_balance = 0.0;
+   return *this;
+}
 
    bool Account::operator~() const {
       return m_number == 0 && m_holderName[0];

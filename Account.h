@@ -1,21 +1,26 @@
 #ifndef SENECA_ACCOUNT_H_
 #define SENECA_ACCOUNT_H_
+
 #include <iostream>
 
 namespace seneca {
+
    const int NameMaxLen = 30;
+
    class Account {
       double m_balance{};
       int m_number{};
-      char m_holderName[NameMaxLen + 1];
+      char m_holderName[NameMaxLen + 1]{};
+
       void cpyName(const char* src);
-      bool isValidNumber(int number)const;
-      void setInvalid();            
+      bool isValidNumber(int number) const;
+      void makeItInvalid();
 
    public:
       Account(const char* holderName = nullptr);
       Account(const char* holderName, int number, double balance);
-      std::ostream& display()const;
+
+      std::ostream& display() const;
 
       operator bool() const;
       operator int() const;
@@ -30,13 +35,18 @@ namespace seneca {
 
       Account& operator+=(double amount);
       Account& operator-=(double amount);
+
       Account& operator<<(Account& right);
       Account& operator>>(Account& right);
 
       bool operator~() const;
-      Account& operator++();   Account operator++(int);
-      Account& operator--();   Account operator--(int);
-   };
-}
 
-#endif
+      Account& operator++();     
+      Account operator++(int);   
+      Account& operator--();     
+      Account operator--(int);   
+   };
+
+} 
+
+#endif 
