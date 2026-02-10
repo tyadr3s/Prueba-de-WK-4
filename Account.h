@@ -7,8 +7,7 @@ namespace seneca {
    class Account {
       double m_balance{};
       int m_number{};
-      char m_holderName[NameMaxLen + 1]{};
-
+      char m_holderName[NameMaxLen + 1];
       void cpyName(const char* src);
       bool isValidNumber(int number)const;
       void setInvalid();            
